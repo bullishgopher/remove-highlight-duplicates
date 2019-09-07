@@ -1,0 +1,211 @@
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>
+  /**
+   * Run initializations on dialog load.
+   */
+   
+   var myVar;
+  $(function() {
+    myVar = setInterval(myTimer, 1000);
+            
+    // get the selected range from current google sheet
+    onGetSelectedRange();
+
+    // ok the dialog
+    $('#dialog-ok-button').click(onOkClick);
+
+    // close the dialog
+    $('#dialog-cancel-button').click(onCancelClick);
+    
+  });
+  
+  function myTimer(){
+  var action = "on_timer";
+  var row_letter = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']; 
+    // Send the value to the server and handle the response.
+    google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+          var for_value;
+            if (msg[1] == 1 && msg[3] == 1)
+            {
+               for_value = "Select titles!";
+            }
+            else if (msg[1] == 1 && msg[3] > 1)
+            {
+               for_value = row_letter[msg[0]-1] + "2:" + row_letter[msg[2]-1] + msg[3];
+            }
+            else
+            {
+               for_value = row_letter[msg[0]-1] + msg[1] + ":" + row_letter[msg[2]-1] + msg[3];
+            }
+            
+            document.getElementById("dialog-range-show").value = for_value;
+          })
+        .withFailureHandler(
+          function(msg, element) {
+          })
+        .withUserObject(this)
+        .modifySheets(action);
+  //clearInterval(myVar)
+  }
+  /**
+   * Calls the server to modify the sheet.
+   * get selected range from server
+   */
+  function onGetSelectedRange()
+  {
+    // Gather any information that needs to be sent to the server here.
+    var action = "get_current_range";
+    //showStatus('Getting selected range ...');
+    var row_letter = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']; 
+    // Send the value to the server and handle the response.
+    google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            // Respond to success conditions here.
+            var for_value;
+            if (msg[1] == 1 && msg[3] == 1)
+            {
+               for_value = "Select titles!";
+            }
+            else if (msg[1] == 1 && msg[3] > 1)
+            {
+               for_value = row_letter[msg[0]-1] + "2:" + row_letter[msg[2]-1] + msg[3];
+            }
+            else
+            {
+               for_value = row_letter[msg[0]-1] + msg[1] + ":" + row_letter[msg[2]-1] + msg[3];
+            }
+            
+            document.getElementById("dialog-range-show").value = for_value;
+            element.disabled = false;
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            // Respond to failure conditions here.
+            //showStatus('Failed: ' + msg, 'error');
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .modifySheets(action);
+  }
+  
+   /**
+   * Calls the server to modify the sheet.
+   * get auto range from server
+   */
+  function onAutoRange() {
+
+    // Gather any information that needs to be sent to the server here.
+    var action = "get_auto_range";
+    //showStatus('Working...');
+    var row_letter = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']; 
+    // Send the value to the server and handle the response.
+    google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            // Respond to success conditions here.
+            //showStatus('Getting Auto Range successful.');
+            document.getElementById("dialog-range-show").value = "A1:" + row_letter[msg[0]-1] + msg[1];
+            element.disabled = false;
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            // Respond to failure conditions here.
+            //showStatus('Getting Auto Range failed: ' + msg, 'error');
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .modifySheets(action);
+  }
+  
+  /**
+   * Calls the server to modify the sheet.
+   * Determines the user-specified action (create a sheet, copy the active
+   * sheet, clear the active sheet) and asks the server to execute it. The
+   * dialog is then closed.
+   */
+  function onOkClick() {
+    this.disabled = true;
+
+    // Gather any information that needs to be sent to the server here.
+    var action = "ok_dialog2";
+    //showStatus('Working...');
+
+    // Send the value to the server and handle the response.
+    google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+          if (myVar != "")
+          {
+          clearInterval(myVar);
+          }
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            // Respond to failure conditions here.
+            showStatus("Can't get range", "Try again later.");
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .modifySheets(action);
+  }
+  
+  function onCancelClick(){
+     this.disabled = true;
+
+    // Gather any information that needs to be sent to the server here.
+    var action = "cancel_dialog2";
+    //showStatus('Finishing without saving changes ...');
+
+    // Send the value to the server and handle the response.
+    google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+          if (myVar != "")
+          {
+          clearInterval(myVar);
+          }
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            // Respond to failure conditions here.
+            //showStatus('Exit failed: ' + msg, 'error');
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .modifySheets(action);
+  }
+  
+  /**
+   * Displays the given status message in the dialog.
+   *
+   * @param {String} msg The status message to display.
+   * @param {String} classId The message type (class id) that the message
+   *   should be displayed as.
+   */
+  function showStatus(msg, classId) {
+  var action = [];
+  action[0] = "show_status_dlg";
+  action[1] = msg;
+  action[2] = classId;
+  
+     google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+          // success return here
+          })
+        .withFailureHandler(
+          function(msg, element) {
+          // fail return here
+          })
+        .withUserObject(this)
+        .modifySheets(action);
+    /*$('#dialog-status').removeClass().html(msg);
+    if (classId) {
+      $('#dialog-status').addClass(classId);
+    }*/
+  }
+
+</script>

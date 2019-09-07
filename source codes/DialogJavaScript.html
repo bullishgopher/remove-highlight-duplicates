@@ -1,0 +1,393 @@
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>
+  /**
+   * Run initializations on dialog load.
+   */
+   var titles_cnt;
+  $(function() {
+    
+    // get the titles from the google sheet
+    //onGetTitles(); // for sort
+    onGetTitlesAndFirstRow();
+    
+    //$('#rdSelectAllColumns').click(onCheckAll);
+    
+    // get the selected range from current google sheet
+    onGetSelectedRange();
+    
+    // get the range from selecting on current google sheet - table icon
+    $('#rdRangeSelectButton').click(onSelectRange);
+    
+    // get the range - auto
+    $('#dialog-range-button').click(onAutoRange);
+  
+    // Assign handler functions to dialog elements here, if needed.
+    $('#dialog-execute-button').click(onExecuteClick);
+
+    // Call the server here to retrieve any information needed to build
+    // the dialog, if necessary.
+
+    // close the dialog
+    $('#dialog-cancel-button').click(onCancelClick);
+    
+    // close the dialog when click cross image
+    $('.modal-dialog-title-close').click(onCancelClick);
+    
+    // sort button
+    //$('#dialog-sort-button').click(onSortClick);
+
+  });
+  
+   /**
+   * Calls the server to modify the sheet.
+   * get titles of sheet data from server
+   */
+  function onGetTitles() {
+
+    // Gather any information that needs to be sent to the server here.
+    var action = "get_titles";
+    //showStatus('Working...');
+    // Send the value to the server and handle the response.
+    google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            // Respond to success conditions here.
+            //showStatus('Getting current sheet titles successful.');
+            for (var i=0;i<msg.length;i++)
+            {
+            var node = document.createElement("OPTION");
+            node.attributes.value = i+1;
+            var textnode = document.createTextNode(msg[i]);
+            node.appendChild(textnode);
+            document.getElementById("dialog-sort-select-title").appendChild(node);
+            //document.getElementById("dialog-sort-select-title").appendChild('<option value="' + msg[i] + '">' + msg[i] + '</option>');
+            }
+            element.disabled = false;
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            // Respond to failure conditions here.
+            //showStatus('Getting current sheet titles failed: ' + msg, 'error');
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .modifySheets(action);
+  }
+  function onCheckAll()
+  {
+   if(document.getElementById("rdSelectAllColumns").checked)
+   {
+    document.getElementById("rdSelectAllColumns").checked=true;
+    for(var i=0;i<titles_cnt/2;i++)
+    {
+     document.getElementById("rdSelectedColumn" + i).checked=true;
+    }
+   }else{
+    document.getElementById("rdSelectAllColumns").checked=false;
+    for(var i=0;i<titles_cnt/2;i++)
+    {
+     document.getElementById("rdSelectedColumn" + i).checked=false;
+    }
+   }
+  }
+  function onCheckBox(n)
+  {
+  var cnt_for_all = 0;
+   if (document.getElementById("rdSelectedColumn" + n).checked)
+   {
+     //alert("checked " + n);
+     document.getElementById("rdSelectedColumn" + n).checked=true;
+     for(var i=0;i<titles_cnt/2;i++)
+     {
+      if (document.getElementById("rdSelectedColumn" + i).checked)
+      {
+      cnt_for_all ++;
+      if(cnt_for_all == titles_cnt/2)
+      {
+      document.getElementById("rdSelectAllColumns").checked=true;
+      }
+      }
+     }
+   } else{
+     //alert("unchecked " + n);
+     document.getElementById("rdSelectedColumn" + n).unchecked=true;
+     document.getElementById("rdSelectAllColumns").checked=false;
+   }
+  }
+  function onGetTitlesAndFirstRow()
+  {
+  // Gather any information that needs to be sent to the server here.
+    var action = "get_titles_and_first_row";
+    // Send the value to the server and handle the response.
+    google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            // Respond to success conditions here.
+            var len = msg.length;
+            titles_cnt = len;
+            for (var i=0;i<len/2;i++)
+            {
+            /*var node = document.createElement("OPTION");
+            node.attributes.value = i+1;
+            var textnode = document.createTextNode(msg[i]);
+            node.appendChild(textnode);
+            document.getElementById("dialog-sort-select-title").appendChild(node);*/
+            //document.getElementById("dialog-sort-select-title").appendChild('<option value="' + msg[i] + '">' + msg[i] + '</option>');
+            document.getElementById("rdColumnsList").insertAdjacentHTML(
+            'beforeend', 
+            '<tr><td class="rd-checkbox-column"><input class="rd-column-select-checkbox" type="checkbox" id="rdSelectedColumn' + i + '" onclick="onCheckBox('+ i +')"></td><td class="rd-header-column-value width-50">'+ msg[i] +'</td><td class="rd-first-column-value width-50">'+ msg[len/2+i] +'</td></tr>');
+            }
+            element.disabled = false;
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            // Respond to failure conditions here.
+            showStatus("Can't get titles", "There was a problem getting the titles. Type the titles and add at least one data. Try again later.");
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .modifySheets(action);
+  }
+  /**
+   * Calls the server to modify the sheet.
+   * get selected range from server
+   */
+  function onGetSelectedRange()
+  {
+    // Gather any information that needs to be sent to the server here.
+    var action = "get_current_range";
+    //showStatus('Getting current selected range...');
+    var row_letter = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']; 
+    // Send the value to the server and handle the response.
+    google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            // Respond to success conditions here.
+            //showStatus('');
+            var for_value;
+            if (msg[1] == 1 && msg[3] == 1)
+            {
+               for_value = "No title(s)!";
+            }
+            else if (msg[1] == 1 && msg[3] > 1)
+            {
+               for_value = row_letter[msg[0]-1] + "2:" + row_letter[msg[2]-1] + msg[3];
+            }
+            else
+            {
+               for_value = row_letter[msg[0]-1] + msg[1] + ":" + row_letter[msg[2]-1] + msg[3];
+            }
+            
+            document.getElementById("dialog-range-show").value = for_value;
+            element.disabled = false;
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            // Respond to failure conditions here.
+            showStatus("Can't get range.", "There was a problem getting current range. Try again later.");
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .modifySheets(action);
+  }
+  
+  /*
+  * select range by clicking table icon
+  */
+  function onSelectRange() {
+  // Gather any information that needs to be sent to the server here.
+    var action = "get_current_range_by_clicking_table_icon";
+    //showStatus('Opening new dialog...');
+    // Send the value to the server and handle the response.
+    google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            element.disabled = false;
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            // Respond to failure conditions here.
+            showStatus("Can't open", "There was a problem opening dialog to sellect the range. Try again later.");
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .modifySheets(action);
+  }
+  
+   /**
+   * Calls the server to modify the sheet.
+   * get auto range from server
+   */
+  function onAutoRange() {
+
+    // Gather any information that needs to be sent to the server here.
+    var action = "get_auto_range";
+    //showStatus('Working...');
+    var row_letter = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']; 
+    // Send the value to the server and handle the response.
+    google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            // Respond to success conditions here.
+            //showStatus('Getting Auto Range successful.');
+            document.getElementById("dialog-range-show").value = "A1:" + row_letter[msg[0]-1] + msg[1];
+            element.disabled = false;
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            // Respond to failure conditions here.
+            showStatus("Can't get range", "There was a problem getting range automatically. Try again later.");
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .modifySheets(action);
+  }
+  
+  /**
+   * Calls the server to modify the sheet.
+   * Determines the user-specified action (create a sheet, copy the active
+   * sheet, clear the active sheet) and asks the server to execute it. The
+   * dialog is then closed.
+   */
+  function onExecuteClick() {
+  /*document.getElementById("dialog-status").insertAdjacentHTML(
+            'beforeend', 
+            '<div class="adx-preloader-splash-screen" id="adxPreloader" style="display: none;"><div class="adx-preloader-splash-screen-rotating-arrows"><img src="https://adx-google-addins.s3.amazonaws.com/adx-ui-default-images/rotating-arrows.svg" alt="rotating arrow"><span>Working</span></div></div>');
+ */   
+    this.disabled = true;
+
+    // Gather any information that needs to be sent to the server here.
+    var action = [];
+    action[0] = $('#dialog-action-select').val();
+    var not_do_action = 0;
+    for(var ii=0;ii<titles_cnt/2;ii++)
+     {
+      if (document.getElementById("rdSelectedColumn" + ii).checked)
+      {
+       action[ii+1] = 1;
+       not_do_action += 1;
+      }else{
+      action[ii+1] = 0;
+      }
+     }
+    if (not_do_action == 0)
+    {
+      showStatus("No selection of titles", "You should select more than one title. Try again later.");
+      this.disabled = false;
+      return;
+    }
+    //showStatus('Working...');
+
+    // Send the value to the server and handle the response.
+    google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            // Respond to success conditions here.
+            //showStatus('Execution successful.');
+            element.disabled = false;
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            // Respond to failure conditions here.
+            showStatus("Can't do that action", "There was a problem doing the action. Try again later.");
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .modifySheets(action);
+  }
+  
+  function onCancelClick(){
+     this.disabled = true;
+
+    // Gather any information that needs to be sent to the server here.
+    var action = "cancel_dialog";
+    //showStatus('Finishing...');
+
+    // Send the value to the server and handle the response.
+    google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            // Respond to success conditions here.
+            //showStatus('Exit successfully.');
+            element.disabled = false;
+            google.script.host.close();
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            // Respond to failure conditions here.
+            showStatus("Can't exit", "There was a problem exiting the program. Try again later.");
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .modifySheets(action);
+  }
+  
+  /**
+   * Calls the server to modify the sheet.
+   * Sorting ...
+   */
+  function onSortClick() {
+    this.disabled = true;
+
+    // Gather any information that needs to be sent to the server here.
+    var action = [];
+    action[0] = "sort";
+    
+    var selector = document.getElementById('dialog-sort-select-title');
+    var cur = selector.selectedIndex;
+    
+    action[1] = cur;
+    
+    //showStatus('Working...');
+
+    // Send the value to the server and handle the response.
+    google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+            // Respond to success conditions here.
+            if (msg == "None")
+            {
+               showStatus('Select the title.');
+            }
+            else
+            {
+               //showStatus('Sorting successful.');
+            }
+            element.disabled = false;
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            // Respond to failure conditions here.
+            showStatus('Sorting failed: ' + msg, 'error');
+            element.disabled = false;
+          })
+        .withUserObject(this)
+        .modifySheets(action);
+  }
+
+  /**
+   * Displays the given status message in the dialog.
+   *
+   * @param {String} msg The status message to display.
+   * @param {String} classId The message type (class id) that the message
+   *   should be displayed as.
+   */
+  function showStatus(msg, classId) {
+  var action = [];
+  action[0] = "show_status_dlg";
+  action[1] = msg;
+  action[2] = classId;
+  
+     google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+          // success return here
+          })
+        .withFailureHandler(
+          function(msg, element) {
+          // fail return here
+          })
+        .withUserObject(this)
+        .modifySheets(action);
+  }
+</script>

@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <!-- Use a templated HTML printing scriptlet to import common stylesheet -->
+    <?!= HtmlService.createHtmlOutputFromFile('Stylesheet').getContent(); ?>
+  </head>
+  <body>
+    <!-- Below is the HTML code that defines the dialog element structure. -->
+    <cursor></cursor><div>
+      <p>
+      This allows you to Remove and Highlight duplicate elements.
+      <span class="logo">it@xcriptech.com</span>
+      </p>
+      
+      <div class="block rd-select-range-container block-padding" id="dialog-elements">
+        <label for="dialog-range-select">
+          ►Step1. Select the range with your table:
+        </label>
+        <div class="width-100" id="dialog-range-select">
+        <div class="rd-select-range-input-container">
+          <input type = "text" id="dialog-range-show" class="adx-input adx-tooltip-owner" name="rd-selected-range" value="" data-alignment="BOTTOM_ARROW_CENTER" data-title="The selected range is too small" spellcheck="false" data-autoshow="false" placeholder="None" disabled/>
+          <div id="rdRangeSelectButton" class="rd-range-select-button rd-range-select-range-icon"></div>
+        </div>
+          <input type = "button" id="dialog-range-button" value="Auto select" />
+        </div>
+      </div>
+      <!-- sorting --
+      <div class="block" id="dialog-elements">
+        <label for="dialog-sort">
+          Sort the selected rows by title.
+        </label>
+        <div class="width-100" id="dialog-sort"> 
+          <select class="width-50" id="dialog-sort-select-title">
+           <option>None</option>
+          </select>
+          <input type = "button" id="dialog-sort-button" value="Sort" /> 
+        </div>
+      </div>-->
+      <div class="block  block-padding" id="dialog-elements">
+        <label>
+          ►Step2. Select columns:
+        </label>
+        <!-- be careful -->
+        <div class="rd-sheet-selection-table-container clear-left" id="rdSheetSelectionTableContainer">
+         <div id="rdSelectColumnsTable" class="adx-table adx-table-scrollable">
+         
+         <!--<div class="plantain"></div>-->
+         <div class="adx-table adx-table-thead-internal">
+          <table>
+          <thead>
+           <tr class="type-select-all" id="rdSelectAllColumnsRow">
+           <th class="adx-table-cell-checkbox rd-checkbox-column">
+           <div class="adx-checkbox" id="rdSelectAllColumnsContainer">
+            <input type="checkbox" class="checkBoxAll" id="rdSelectAllColumns" onclick="onCheckAll()">
+           <!--<label class="adx-checkbox-square" for="rdSelectAllColumns">
+           <div class="adx-checkbox-square-image"></div>-->
+           <!--</label>-->
+           </div>
+           </th>
+           <th class="rd-header-column-value width-50">Column</th>
+           <th class="rd-first-column-value width-50">1st row content</th>
+           </tr>
+          </thead>
+          </table>
+         </div>
+        <div class="adx-table adx-table-tbody-internal rd-columns-list-tbody-container">
+        <table id="rdColumnsListTable">
+        <tbody id="rdColumnsList">
+         <!-- while (values) -->
+        </tbody>
+        </table>
+        </div>
+        
+        </div>
+       </div>
+      </div>
+        <!--Be careful end -->
+      <div class="block  block-padding" id="dialog-elements">
+        <label for="dialog-action-select">
+          ►Step3. Select an action to perfom:
+        </label>
+        <select class="width-100" id="dialog-action-select">
+          <option value="remove">Remove duplicates</option>
+          <option value="remove_populate">Remove duplicates and populate on a new sheet</option>
+          <option value="highlight">Highlight duplicates</option>
+          <option value="highlight_populate">Highlight duplicates and populate on a new sheet</option>
+        </select>
+      </div>
+      <div class="block" id="dialog-button-bar">
+          <button class="action" id="dialog-execute-button">Execute</button>
+          <button id="dialog-cancel-button">Cancel</button>
+          <!--onclick="google.script.host.close()"-->
+      </div>
+      <div class="logger">
+      <div id="dialog-status" class="dialog-status-style"></div>
+      </div>
+    </div>
+
+    <!-- Use a templated HTML printing scriptlet to import JavaScript. -->
+    <?!= HtmlService.createHtmlOutputFromFile('DialogJavaScript').getContent(); ?>
+  </body>
+</html>

@@ -1,0 +1,73 @@
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>
+  /**
+   * Run initializations on dialog load.
+   */
+  $(function() {
+    // sets the title and content of the dialog
+    //init();
+  
+    // ok the dialog
+    $('#dialog-ok-button').click(onOkClick);
+
+    // close the dialog
+    //$('#dialog-cancel-button').click(onCancelClick);
+    
+  });
+  /**
+   * Calls the server to modify the sheet.
+   * sets the title and content of the error dialog
+   
+  function init()
+  {
+    // Gather any information that needs to be sent to the server here.
+    var action = "init_err_dlg";
+    // Send the value to the server and handle the response.
+    google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+          // success comes here
+          })
+        .withFailureHandler(
+          function(msg, element) {
+          // error comes here
+          })
+        .withUserObject(this)
+        .modifySheets(action);
+  }
+  */
+  /**
+   * Calls the server to launch modal dialog.
+   */
+  function onOkClick() {
+    var action = "on_ok_err_dlg";
+    // Send the value to the server and handle the response.
+    google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+          // success
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            // Respond to failure conditions here.
+          })
+        .withUserObject(this)
+        .modifySheets(action);
+  }
+  /*
+  function onCancelClick(){
+    var action = "on_cancel_err_dlg";
+    // Send the value to the server and handle the response.
+    google.script.run
+        .withSuccessHandler(
+          function(msg, element) {
+          // success
+          })
+        .withFailureHandler(
+          function(msg, element) {
+            // Respond to failure conditions here.
+          })
+        .withUserObject(this)
+        .modifySheets(action);
+  }*/
+</script>
